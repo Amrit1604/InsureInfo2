@@ -216,23 +216,32 @@ Expected results:
 - **Security Headers**: Standard security HTTP headers
 - **SSL/TLS Support**: HTTPS encryption ready
 
-## 🐳 **Deployment Options**
+## � **Free Deployment Options**
 
-### **Cloud Platforms**
+### **Recommended Platforms (100% Free)**
 
-- **Heroku**: `git push heroku main`
-- **Railway**: Connect GitHub repository
-- **Render**: Deploy from GitHub
-- **AWS/GCP/Azure**: Use Docker container
+- **Vercel**: `vercel --prod` (Fastest deployment)
+- **Replit**: Import from GitHub at [replit.com](https://replit.com)
+- **Netlify**: Connect repository at [netlify.com](https://netlify.com)
+
+### **Quick Deploy**
+
+```bash
+# Install Vercel CLI
+npm install -g vercel
+
+# Deploy to Vercel
+vercel --prod
+```
+
+**See [FREE_DEPLOYMENT.md](FREE_DEPLOYMENT.md) for detailed instructions.**
 
 ### **Production Checklist**
 
-- [ ] Configure SSL certificates
-- [ ] Set up monitoring and logging
-- [ ] Configure backup and recovery
-- [ ] Implement CI/CD pipeline
-- [ ] Set up load balancing
-- [ ] Configure environment-specific settings
+- [ ] Add environment variables (Google API keys)
+- [ ] Test hackathon endpoint: `/hackrx/run`
+- [ ] Verify HTTPS is enabled (automatic on all platforms)
+- [ ] Test with sample policy documents
 
 ## 🤝 **Contributing**
 
