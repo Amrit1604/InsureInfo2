@@ -123,3 +123,4 @@ benchmark_*.json
 performance_*.log
 temp/
 tmp/
+.vercel
