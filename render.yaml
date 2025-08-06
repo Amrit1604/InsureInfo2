@@ -1,0 +1,26 @@
+# Render.com deployment configuration
+# This file configures your service on Render
+services:
+  - type: web
+    name: insure-info-hackathon-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python api_server.py
+    plan: free
+    region: oregon  # Choose closest to your users
+    branch: main
+    healthCheckPath: /health
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false  # Set this in Render dashboard
+      - key: GOOGLE_API_KEY_2
+        sync: false
+      - key: GOOGLE_API_KEY_3
+        sync: false
+      - key: GOOGLE_API_KEY_4
+        sync: false
+      - key: PORT
+        value: "8000"
+      - key: HOST
+        value: "0.0.0.0"
+    autoDeploy: true
