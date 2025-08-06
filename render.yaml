@@ -1,18 +1,17 @@
-# Render.com deployment configuration
-# This file configures your service on Render
+# Render.com deployment configuration - Updated for Python 3.13 compatibility
 services:
   - type: web
     name: insure-info-hackathon-api
     env: python
-    buildCommand: pip install -r requirements.txt
+    buildCommand: ./build.sh
     startCommand: python api_server.py
     plan: free
-    region: oregon  # Choose closest to your users
+    region: oregon
     branch: main
     healthCheckPath: /health
     envVars:
       - key: GOOGLE_API_KEY
-        sync: false  # Set this in Render dashboard
+        sync: false
       - key: GOOGLE_API_KEY_2
         sync: false
       - key: GOOGLE_API_KEY_3
