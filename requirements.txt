@@ -1,19 +1,28 @@
-# Build Tools (Fix for deployment)
-setuptools>=68.0.0
-wheel>=0.38.0
-pip>=23.0.0
-
 # Core API Framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 
-# AI and ML Dependencies (LIGHTWEIGHT VERSIONS)
+# AI and ML Dependencies
 google-generativeai==0.3.2
 sentence-transformers==2.2.2
 faiss-cpu==1.7.4
-numpy>=1.24.0,<1.26.0
-torch==2.1.0+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
+numpy==1.24.3
+
+# Document Processing
+PyMuPDF==1.23.8
+PyPDF2==3.0.1
+python-docx==0.8.11
+
+# HTTP and Download Support
+requests==2.31.0
+urllib3==2.0.7
+
+# Utilities and Security
+python-dotenv==1.0.0
+python-multipart==0.0.6
+aiofiles==23.2.1
+colorama==0.4.6
 
 # Document Processing
 PyMuPDF==1.23.8

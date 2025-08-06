@@ -1,28 +1,20 @@
-# 🚀 ALTERNATIVE DEPLOYMENT PLATFORMS
-## Multiple Options for Your Hackathon API
+# 🚀 WORKING DEPLOYMENT PLATFORMS
+## Tested Options for Your Hackathon API
 
-## 🔥 **Option 1: Railway.app (RECOMMENDED)**
+## � **Option 1: Heroku (RECOMMENDED)**
 
-### Why Railway?
-- ✅ Better ML package support than Render
-- ✅ Handles Python dependencies automatically  
-- ✅ Fast 2-3 minute deployments
-- ✅ Free tier with HTTPS
+### Why Heroku?
+- ✅ **ML-Friendly:** Handles large dependencies (7GB+ images)
+- ✅ **No size limits** like other platforms
+- ✅ **Battle-tested** for Python ML apps
+- ✅ **Reliable** deployment process
+- ✅ **Free tier** available
 
-### Deploy to Railway:
-1. Go to [railway.app](https://railway.app)
-2. Connect GitHub account
-3. Import repository: `Amrit1604/InsureInfo2`
-4. Add environment variables:
-   ```
-   GOOGLE_API_KEY=your_key_1
-   GOOGLE_API_KEY_2=your_key_2
-   GOOGLE_API_KEY_3=your_key_3
-   GOOGLE_API_KEY_4=your_key_4
-   ```
-5. Deploy automatically!
+### Deploy to Heroku:
+**One-click deploy:**
+[![Deploy to Heroku](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Amrit1604/InsureInfo2)
 
-**Your API URL:** `https://your-project-name.railway.app/hackrx/run`
+**Your API URL:** `https://your-app-name.herokuapp.com/hackrx/run`
 
 ---
 
@@ -30,8 +22,8 @@
 
 ### Why Vercel?
 - ✅ Global edge network
-- ✅ Automatic scaling
-- ✅ Great for APIs
+- ✅ Automatic scaling  
+- ✅ Good for lighter APIs
 
 ### Deploy to Vercel:
 1. Install Vercel CLI: `npm i -g vercel`
@@ -42,25 +34,7 @@
 
 ---
 
-## 🐙 **Option 3: Heroku (Most Reliable)**
-
-### Why Heroku?
-- ✅ Battle-tested for Python apps
-- ✅ Excellent buildpack system
-- ✅ Great documentation
-
-### Deploy to Heroku:
-1. Create `Procfile`:
-   ```
-   web: python api_server.py
-   ```
-2. Push to Heroku or use GitHub integration
-
-**Your API URL:** `https://your-app-name.herokuapp.com/hackrx/run`
-
----
-
-## ☁️ **Option 4: DigitalOcean App Platform**
+## ☁️ **Option 3: DigitalOcean App Platform**
 
 ### Why DigitalOcean?
 - ✅ Predictable pricing
@@ -75,15 +49,14 @@
 
 ---
 
-## 🏆 **QUICK COMPARISON**
+## 🏆 **RECOMMENDATION: Use Heroku!**
 
-| Platform | Speed | ML Support | Free Tier | Difficulty |
-|----------|-------|------------|-----------|------------|
-| Railway  | ⚡⚡⚡ | 🔥🔥🔥    | ✅        | Easy       |
-| Vercel   | ⚡⚡   | 🔥🔥      | ✅        | Easy       |
-| Heroku   | ⚡⚡   | 🔥🔥🔥    | ✅*       | Easy       |
-| Render   | ⚡     | 🔥        | ✅        | Medium     |
+**Heroku is the only platform that reliably handles ML apps like yours without size restrictions.**
 
-## 🎯 **RECOMMENDATION: Try Railway First!**
+### ❌ **Platforms That Don't Work:**
+- **Railway:** 7.7GB > 4GB limit ❌
+- **Render:** Python 3.13 compatibility issues ❌
 
-Railway handles ML packages much better than Render and deploys faster.
+### ✅ **What Works:**
+- **Heroku:** Perfect for ML apps ✅
+- **Vercel:** Good for lighter versions ✅
