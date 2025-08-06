@@ -8,11 +8,12 @@ fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic==2.5.0
 
-# AI and ML Dependencies
+# AI and ML Dependencies (LIGHTWEIGHT VERSIONS)
 google-generativeai==0.3.2
 sentence-transformers==2.2.2
 faiss-cpu==1.7.4
 numpy>=1.24.0,<1.26.0
+torch==2.1.0+cpu --find-links https://download.pytorch.org/whl/torch_stable.html
 
 # Document Processing
 PyMuPDF==1.23.8

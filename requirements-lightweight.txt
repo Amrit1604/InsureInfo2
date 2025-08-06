@@ -1,0 +1,22 @@
+# Lightweight requirements for Railway (under 4GB limit)
+# Core API Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pydantic==2.5.0
+
+# Essential AI (minimal versions)
+google-generativeai==0.3.2
+numpy==1.24.3
+
+# Document Processing
+PyMuPDF==1.23.8
+python-docx==0.8.11
+
+# HTTP Support
+requests==2.31.0
+python-dotenv==1.0.0
+python-multipart==0.0.6
+colorama==0.4.6
+
+# NOTE: Removed heavy ML packages (sentence-transformers, faiss-cpu)
+# This will disable semantic search but keep core functionality working
