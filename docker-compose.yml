@@ -1,0 +1,60 @@
+# InsureInfo - AI-Powered Insurance Claims Processing API
+# Docker Compose configuration for production deployment
+
+version: '3.8'
+
+services:
+  insureinfo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: insureinfo-api
+    ports:
+      - "8000:8000"
+      - "443:443"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+    env_file:
+      - .env
+    volumes:
+      - ./cache:/app/cache
+      - ./docs:/app/docs:ro
+      - ./ssl:/app/ssl:ro  # For SSL certificates
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - insureinfo-network
+
+  # Optional: Nginx reverse proxy for advanced HTTPS setup
+  nginx-proxy:
+    image: nginx:alpine
+    container_name: insureinfo-nginx
+    ports:
+      - "80:80"
+      - "8443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - insureinfo-api
+    restart: unless-stopped
+    networks:
+      - insureinfo-network
+    profiles: ["proxy"]  # Enable with: docker-compose --profile proxy up
+
+networks:
+  insureinfo-network:
+    driver: bridge
+    name: insureinfo-network
+
+volumes:
+  cache-data:
+    driver: local
+  docs-data:
+    driver: local
