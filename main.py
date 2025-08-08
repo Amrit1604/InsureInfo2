@@ -93,29 +93,36 @@ class IntelligentClaimsProcessor:
         return True
 
     def download_document_from_url(self, document_url):
-        """🌐 DYNAMIC DOCUMENT DOWNLOAD - Handle unknown sources from hackathon admins"""
+        """🌐 ULTRA-FAST DOCUMENT DOWNLOAD - Optimized for 25s response limit"""
         try:
-            print(f"{Fore.CYAN}🌐 Downloading document from URL...")
-            print(f"{Fore.YELLOW}📎 URL: {document_url[:80]}...")
+            print(f"{Fore.CYAN}🚀 Ultra-fast downloading: {document_url[:60]}...")
 
             # Check cache first
             url_hash = hashlib.md5(document_url.encode()).hexdigest()
             if url_hash in self.document_cache:
-                print(f"{Fore.GREEN}⚡ Using cached document!")
+                print(f"{Fore.GREEN}⚡ Using cached document (0ms)!")
                 return self.document_cache[url_hash]
 
-            # Download the document
+            # Speed-optimized download with streaming and timeout
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                'Accept': '*/*',
+                'Connection': 'keep-alive'
             }
-            
-            response = requests.get(document_url, headers=headers, timeout=30)
+
+            # Download with aggressive timeout for speed
+            response = requests.get(
+                document_url,
+                headers=headers,
+                timeout=8,  # Reduced from 30s to 8s
+                stream=True  # Stream for faster initial response
+            )
             response.raise_for_status()
 
             # Get file extension from URL or content type
             parsed_url = urlparse(document_url)
             file_extension = os.path.splitext(parsed_url.path)[1]
-            
+
             if not file_extension:
                 content_type = response.headers.get('content-type', '').lower()
                 if 'pdf' in content_type:
@@ -125,76 +132,135 @@ class IntelligentClaimsProcessor:
                 else:
                     file_extension = '.pdf'  # Default to PDF
 
-            # Save to temporary file
+            # Stream to temporary file for speed
             with tempfile.NamedTemporaryFile(suffix=file_extension, delete=False) as temp_file:
-                temp_file.write(response.content)
+                # Download in chunks for speed monitoring
+                downloaded = 0
+                chunk_size = 8192  # 8KB chunks for balance of speed/memory
+                max_size = 50 * 1024 * 1024  # 50MB limit for speed
+
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        temp_file.write(chunk)
+                        downloaded += len(chunk)
+
+                        # Safety limit for speed
+                        if downloaded > max_size:
+                            print(f"{Fore.YELLOW}⚠️ File too large, truncating at 50MB for speed")
+                            break
+
                 temp_file_path = temp_file.name
 
-            print(f"{Fore.GREEN}✅ Document downloaded successfully!")
-            print(f"{Fore.BLUE}📄 File size: {len(response.content)} bytes")
-            print(f"{Fore.BLUE}📁 Temp path: {temp_file_path}")
+            print(f"{Fore.GREEN}✅ Downloaded {downloaded} bytes in optimized mode!")
 
             # Cache the downloaded file path
             self.document_cache[url_hash] = temp_file_path
-            
+
             return temp_file_path
 
+        except requests.exceptions.Timeout:
+            print(f"{Fore.RED}❌ Download timeout (8s limit) - using fallback")
+            return None
         except requests.exceptions.RequestException as e:
-            print(f"{Fore.RED}❌ Download failed: {str(e)}")
+            print(f"{Fore.RED}❌ Download failed: {str(e)[:100]}")
             return None
         except Exception as e:
-            print(f"{Fore.RED}❌ Unexpected error downloading document: {str(e)}")
+            print(f"{Fore.RED}❌ Unexpected error downloading: {str(e)[:100]}")
             return None
 
     def process_dynamic_documents(self, document_urls):
-        """� BADASS MULTI-DOCUMENT PROCESSING - Handle multiple URLs from hackathon admins"""
+        """🚀 SPEED-OPTIMIZED MULTI-DOCUMENT PROCESSING - Parallel downloads for 25s target"""
         if isinstance(document_urls, str):
             document_urls = [document_urls]  # Single URL to list
-            
-        print(f"{Fore.CYAN}� MULTI-DOCUMENT PROCESSING: {len(document_urls)} URLs detected!")
-        
+
+        print(f"{Fore.CYAN}🚀 SPEED-OPTIMIZED PROCESSING: {len(document_urls)} URLs detected!")
+
         all_chunks = []
         all_sources = []
         success_count = 0
-        
-        for i, url in enumerate(document_urls, 1):
-            try:
-                print(f"\n{Fore.YELLOW}📄 Processing document {i}/{len(document_urls)}: {url[:60]}...")
-                
-                # Download the document
-                temp_file_path = self.download_document_from_url(url)
-                if not temp_file_path:
-                    print(f"{Fore.RED}❌ Failed to download document {i}")
+        start_time = time.time()
+
+        # Parallel download for multiple documents (speed optimization)
+        if len(document_urls) > 1:
+            import concurrent.futures
+
+            print(f"{Fore.YELLOW}⚡ Using parallel downloads for {len(document_urls)} documents...")
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                # Submit all downloads
+                future_to_url = {executor.submit(self.download_document_from_url, url): (i, url)
+                               for i, url in enumerate(document_urls, 1)}
+
+                # Process downloads as they complete (with timeout)
+                for future in concurrent.futures.as_completed(future_to_url, timeout=15):
+                    i, url = future_to_url[future]
+                    try:
+                        temp_file_path = future.result(timeout=5)
+
+                        if temp_file_path:
+                            # Fast text extraction
+                            document_text = extract_text_from_file(temp_file_path)
+
+                            if document_text and len(document_text.strip()) > 100:
+                                # Quick chunking
+                                chunks = chunk_text(document_text)
+
+                                if chunks:
+                                    source_name = f"hackathon_doc_{i}_{int(time.time())}"
+                                    for chunk in chunks:
+                                        all_chunks.append(chunk)
+                                        all_sources.append(source_name)
+
+                                    success_count += 1
+                                    print(f"{Fore.GREEN}✅ Doc {i}: {len(chunks)} chunks ({len(document_text)} chars)")
+
+                    except Exception as e:
+                        print(f"{Fore.RED}❌ Error processing document {i}: {str(e)[:50]}")
+                        continue
+
+        else:
+            # Single document - optimized sequential processing
+            for i, url in enumerate(document_urls, 1):
+                try:
+                    print(f"\n{Fore.YELLOW}📄 Speed-processing document: {url[:60]}...")
+
+                    # Fast download
+                    temp_file_path = self.download_document_from_url(url)
+                    if not temp_file_path:
+                        print(f"{Fore.RED}❌ Failed to download document {i}")
+                        continue
+
+                    # Fast text extraction
+                    print(f"{Fore.YELLOW}⚡ Fast text extraction...")
+                    document_text = extract_text_from_file(temp_file_path)
+
+                    if not document_text or len(document_text.strip()) < 100:
+                        print(f"{Fore.RED}❌ Document {i} appears empty or too short!")
+                        continue
+
+                    # Fast chunking
+                    print(f"{Fore.YELLOW}⚡ Fast chunking...")
+                    chunks = chunk_text(document_text)
+
+                    if not chunks:
+                        print(f"{Fore.RED}❌ Failed to create chunks from document {i}!")
+                        continue
+
+                    # Add to collection
+                    source_name = f"hackathon_doc_{i}_{int(time.time())}"
+                    for chunk in chunks:
+                        all_chunks.append(chunk)
+                        all_sources.append(source_name)
+
+                    success_count += 1
+                    print(f"{Fore.GREEN}✅ Document {i}: {len(chunks)} chunks extracted ({len(document_text)} chars)")
+
+                except Exception as e:
+                    print(f"{Fore.RED}❌ Error processing document {i}: {str(e)[:50]}")
                     continue
 
-                # Extract text from downloaded document
-                print(f"{Fore.YELLOW}📖 Extracting text...")
-                document_text = extract_text_from_file(temp_file_path)
-                
-                if not document_text or len(document_text.strip()) < 100:
-                    print(f"{Fore.RED}❌ Document {i} appears empty or too short!")
-                    continue
-
-                # Chunk the document
-                print(f"{Fore.YELLOW}✂️ Chunking document...")
-                chunks = chunk_text(document_text)
-                
-                if not chunks:
-                    print(f"{Fore.RED}❌ Failed to create chunks from document {i}!")
-                    continue
-
-                # Add to collection with unique source identifier
-                source_name = f"hackathon_doc_{i}_{int(time.time())}"
-                for chunk in chunks:
-                    all_chunks.append(chunk)
-                    all_sources.append(source_name)
-                
-                success_count += 1
-                print(f"{Fore.GREEN}✅ Document {i}: {len(chunks)} chunks extracted ({len(document_text)} chars)")
-
-            except Exception as e:
-                print(f"{Fore.RED}❌ Error processing document {i}: {str(e)}")
-                continue
+        download_time = time.time() - start_time
+        print(f"{Fore.CYAN}⚡ Document processing completed in {download_time:.1f}s")
 
         if success_count == 0:
             print(f"{Fore.RED}💀 ALL DYNAMIC DOCUMENTS FAILED! Keeping existing documents.")
@@ -206,29 +272,34 @@ class IntelligentClaimsProcessor:
             # Keep existing local docs and add dynamic ones
             all_chunks = self.document_chunks + all_chunks
             all_sources = self.document_sources + all_sources
-        
+
         # Update system state
         self.document_chunks = all_chunks
         self.document_sources = all_sources
         self.current_document_urls = document_urls
         self.dynamic_docs_count = success_count
 
-        # Generate new embeddings for combined dataset
-        print(f"{Fore.YELLOW}🧠 Generating embeddings for combined document set...")
+        # Fast embeddings generation
+        embeddings_start = time.time()
+        print(f"{Fore.YELLOW}🧠 Fast embeddings generation for combined dataset...")
         self.embeddings = self.sentence_model.encode(self.document_chunks)
+        embeddings_time = time.time() - embeddings_start
 
-        print(f"\n{Fore.GREEN}🎉 MULTI-DOCUMENT SUCCESS!")
-        print(f"{Fore.BLUE}📊 Final Dataset Stats:")
-        print(f"   • Dynamic documents: {success_count}")
+        total_time = time.time() - start_time
+        print(f"\n{Fore.GREEN}🎉 SPEED-OPTIMIZED SUCCESS!")
+        print(f"{Fore.BLUE}📊 Performance Stats:")
+        print(f"   • Documents processed: {success_count}")
         print(f"   • Total chunks: {len(self.document_chunks)}")
-        print(f"   • Embeddings shape: {self.embeddings.shape}")
-        print(f"   • Hybrid mode: {'Yes' if self.local_docs_loaded else 'No'}")
+        print(f"   • Download time: {download_time:.1f}s")
+        print(f"   • Embeddings time: {embeddings_time:.1f}s")
+        print(f"   • Total time: {total_time:.1f}s")
+        print(f"   • Speed target: {'✅ Under 15s' if total_time < 15 else '⚠️ Over 15s'}")
 
         return True
 
     def ensure_documents_loaded(self, document_urls=None):
         """🛡️ BADASS DOCUMENT MANAGEMENT - Hybrid static + dynamic loading"""
-        
+
         # 🔥 ALWAYS LOAD SAMPLE DOCS FIRST (if not already loaded)
         if not self.local_docs_loaded:
             print(f"{Fore.CYAN}📚 Loading sample policy documents as baseline...")
@@ -237,7 +308,7 @@ class IntelligentClaimsProcessor:
                 print(f"{Fore.GREEN}✅ Sample documents loaded as baseline")
             else:
                 print(f"{Fore.YELLOW}⚠️ No sample documents found, proceeding with dynamic only")
-        
+
         # 🌐 PROCESS DYNAMIC DOCUMENTS (if provided)
         if document_urls:
             # Handle both single URL and multiple URLs
@@ -245,7 +316,7 @@ class IntelligentClaimsProcessor:
                 urls_list = [document_urls]
             else:
                 urls_list = document_urls
-                
+
             # Check if these are new URLs
             if urls_list != self.current_document_urls:
                 print(f"{Fore.CYAN}🔄 New document URLs detected, processing {len(urls_list)} documents...")
@@ -254,28 +325,39 @@ class IntelligentClaimsProcessor:
                     print(f"{Fore.RED}❌ Both dynamic and sample documents failed!")
                     return False
                 return True
-        
+
         # ✅ ENSURE WE HAVE SOMETHING LOADED
         if not self.document_chunks:
             print(f"{Fore.YELLOW}📂 No documents loaded yet, loading sample docs...")
             return self.load_documents("docs")
-        
+
         print(f"{Fore.GREEN}✅ Documents ready: {len(self.document_chunks)} chunks available")
         return True
 
-    def call_llm_with_fallback(self, prompt, max_retries=None):
-        """🚀 BULLETPROOF LLM CALLS - Automatic failover across all API keys"""
+    def call_llm_with_fallback(self, prompt, max_retries=None, timeout=5):
+        """🚀 BULLETPROOF LLM CALLS - Speed-optimized with timeout control"""
         if max_retries is None:
             max_retries = len(self.api_keys) * 2  # Try each key twice
 
         for attempt in range(max_retries):
             try:
-                print(f"{Fore.CYAN}🤖 LLM Call attempt {attempt + 1} with key {self.current_key_index + 1}")
+                print(f"{Fore.CYAN}🤖 LLM Call attempt {attempt + 1} (timeout: {timeout}s)")
 
-                response = self.llm.generate_content(prompt)
+                # Speed-optimized generation config for 25s response target
+                generation_config = genai.types.GenerationConfig(
+                    max_output_tokens=300,  # Increased but limited for speed
+                    temperature=0.1,  # Low temperature for speed and consistency
+                    candidate_count=1
+                )
+
+                response = self.llm.generate_content(
+                    prompt,
+                    generation_config=generation_config,
+                    request_options={"timeout": timeout}  # Configurable timeout
+                )
 
                 if response and response.text:
-                    print(f"{Fore.GREEN}✅ LLM call successful!")
+                    print(f"{Fore.GREEN}✅ LLM call successful in attempt {attempt + 1}!")
                     return response.text
                 else:
                     print(f"{Fore.YELLOW}⚠️ Empty response, trying next key...")
@@ -283,10 +365,15 @@ class IntelligentClaimsProcessor:
 
             except Exception as e:
                 error_msg = str(e).lower()
-                print(f"{Fore.RED}❌ LLM call failed: {str(e)}")
+                print(f"{Fore.RED}❌ LLM call failed: {str(e)[:100]}")
+
+                # Check for timeout errors
+                if 'timeout' in error_msg or 'deadline' in error_msg:
+                    print(f"{Fore.YELLOW}⏰ TIMEOUT - Reducing timeout for next attempt...")
+                    timeout = max(2, timeout - 1)  # Reduce timeout but keep minimum
 
                 # Check for quota/rate limit errors
-                if any(keyword in error_msg for keyword in ['quota', 'rate', 'limit', 'exceeded', 'resource_exhausted']):
+                elif any(keyword in error_msg for keyword in ['quota', 'rate', 'limit', 'exceeded', 'resource_exhausted']):
                     print(f"{Fore.YELLOW}📊 QUOTA EXCEEDED - Rotating to next API key...")
                     self.rotate_api_key()
                 elif 'api_key' in error_msg or 'unauthorized' in error_msg:
@@ -296,9 +383,9 @@ class IntelligentClaimsProcessor:
                     print(f"{Fore.RED}💥 Unexpected error, rotating anyway...")
                     self.rotate_api_key()
 
-                # Small delay to avoid hammering
+                # Minimal delay to avoid hammering but maintain speed
                 import time
-                time.sleep(0.5)
+                time.sleep(0.2)  # Reduced from 0.5s to 0.2s
 
         # All keys failed
         print(f"{Fore.RED}💀 ALL {len(self.api_keys)} API KEYS EXHAUSTED!")
@@ -569,8 +656,8 @@ Provide your analysis in this JSON format:
 """
 
         try:
-            # 🚀 USE BULLETPROOF LLM CALL WITH AUTOMATIC FAILOVER
-            response_text = self.call_llm_with_fallback(prompt)
+            # 🚀 USE BULLETPROOF LLM CALL WITH AUTOMATIC FAILOVER AND SPEED OPTIMIZATION
+            response_text = self.call_llm_with_fallback(prompt, timeout=3)  # 3s timeout for speed
 
             if not response_text or "Unable to process due to API limitations" in response_text:
                 return {
@@ -663,19 +750,19 @@ if __name__ == "__main__":
 
     # Test dynamic document processing capability
     print(f"\n{Fore.CYAN}🧪 Testing dynamic document processing...")
-    
+
     test_url = "https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D"
     test_query = "What is the grace period for premium payment?"
-    
+
     print(f"{Fore.YELLOW}📎 Testing with URL: {test_url[:80]}...")
     print(f"{Fore.YELLOW}❓ Test question: {test_query}")
-    
+
     result = processor.process_claim_query(test_query, test_url)
-    
+
     print(f"\n{Fore.GREEN}🎉 DYNAMIC DOCUMENT TEST RESULT:")
     print(f"Decision: {result.get('decision', 'Unknown')}")
     print(f"Answer: {result.get('user_friendly_explanation', 'No answer')[:200]}...")
-    
+
     if result.get('decision') != 'error':
         print(f"\n{Fore.GREEN}✅ SUCCESS: System can handle hackathon admin documents!")
     else:
