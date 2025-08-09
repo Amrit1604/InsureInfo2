@@ -417,25 +417,23 @@ class UniversalDocumentProcessor:
             context = "\n\n".join([f"CHUNK {i+1}:\n{chunk}" for i, chunk in enumerate(relevant_chunks)])
 
             # Ultra-detailed prompt for maximum accuracy
-            prompt = f"""You are an expert document analyst. Your task is to provide the MOST ACCURATE answer based ONLY on the provided document content.
+            prompt = f"""You are a professional academic analyst and expert document analyst. Provide a comprehensive, detailed answer based STRICTLY on the provided document content.
 
 DOCUMENT CONTEXT:
 {context}
 
 QUESTION: {question}
 
-CRITICAL INSTRUCTIONS:
-1. Read the document context VERY CAREFULLY
-2. Extract EXACT information from the document
-3. Quote specific numbers, dates, percentages, and terms from the document
-4. If the document contains multiple relevant sections, synthesize them accurately
-5. If the exact answer is not in the document, clearly state "The document does not contain specific information about [topic]"
-6. DO NOT make assumptions or add information not in the document
-7. BE PRECISE with terminology used in the document
-8. If there are conditions or exceptions mentioned, include them
-9. Provide the most complete and accurate answer possible
+PROFESSIONAL ANALYSIS INSTRUCTIONS:
+1. Provide detailed professional analysis (200-300 words)
+2. Include specific quotes and references from the document
+3. Use academic language with clear explanations of key concepts
+4. Search ALL context for relevant information first
+5. Build comprehensive answers using related concepts if direct info missing
+6. Only state "Information not available" if NO relevant content exists
+7. Maintain professional academic tone throughout
 
-ACCURATE ANSWER:"""
+COMPREHENSIVE PROFESSIONAL ANALYSIS:"""
 
             # Try with retries and key rotation
             for attempt in range(max_retries):
@@ -444,10 +442,10 @@ ACCURATE ANSWER:"""
 
                     # SPEED OPTIMIZATION: Use failover system for reliable generation
                     generation_config = genai.types.GenerationConfig(
-                        max_output_tokens=800,  # Slightly reduced for speed
-                        temperature=0.1,  # Keep low for accuracy
-                        top_p=0.9,  # Slightly higher for speed
-                        top_k=40,
+                        max_output_tokens=1000,  # Speed-optimized for single questions
+                        temperature=0.1,  # Low for speed and precision
+                        top_p=0.85,  # Focused for speed
+                        top_k=35,  # Reduced for speed
                         candidate_count=1
                     )
 
@@ -562,12 +560,12 @@ ACCURATE ANSWER:"""
             for question_embedding in question_embeddings:
                 scores, indices = self.faiss_index.search(
                     question_embedding.reshape(1, -1).astype('float32'),
-                    k=10  # Get more candidates
+                    k=20  # Get MANY more candidates
                 )
 
                 # Accumulate scores for each chunk
                 for idx, score in zip(indices[0], scores[0]):
-                    if score > 0.25:  # Lower threshold for more content
+                    if score > 0.15:  # Much lower threshold to catch everything
                         if idx not in all_chunk_scores:
                             all_chunk_scores[idx] = 0
                         all_chunk_scores[idx] += score
@@ -575,7 +573,7 @@ ACCURATE ANSWER:"""
             # Get top chunks globally (best across all questions)
             top_chunk_indices = sorted(all_chunk_scores.keys(),
                                      key=lambda x: all_chunk_scores[x],
-                                     reverse=True)[:12]  # Top 12 chunks total
+                                     reverse=True)[:20]  # Much more content
 
             top_chunks = [self.document_chunks[idx] for idx in top_chunk_indices]
 
@@ -591,36 +589,42 @@ ACCURATE ANSWER:"""
         """Generate ALL answers in one mega API call"""
         try:
             # Create comprehensive context from top chunks
-            context = "\n\n".join(chunks[:8])  # Use top 8 chunks only
+            context = "\n\n".join(chunks[:15])  # Much more context for accuracy
 
             # Create mega prompt for all questions
             questions_text = ""
             for i, question in enumerate(questions, 1):
                 questions_text += f"\n{i}. {question}"
 
-            prompt = f"""Based on the document context below, answer ALL questions concisely and accurately.
-
-QUESTIONS:{questions_text}
+            prompt = f"""Based on this document context, answer the following questions with precise, detailed analysis. Find the EXACT information in the text - it IS there.
 
 DOCUMENT CONTEXT:
 {context}
 
-INSTRUCTIONS:
-- Answer each question directly and concisely
-- Use only information from the provided context
-- Keep each answer under 100 words
-- Format as numbered list: 1. [answer] 2. [answer] etc.
-- If context doesn't contain answer, say "Information not available in document"
+QUESTIONS:{questions_text}
 
-ANSWERS:"""
+CRITICAL INSTRUCTIONS:
+- Answer each question precisely with 100-150 words
+- Quote EXACT text from the document
+- The answers ARE in the document - find them
+- Look for chapter titles and specific content
+- Format ONLY as: 1. [answer] 2. [answer] etc.
+- NO question repetition in answers
+- Use specific quotes and references
+- Build comprehensive answers using related concepts if direct info missing
+- Only use "Information not available" if absolutely NO relevant content exists
+- Format as numbered list: 1. [analysis] 2. [analysis] etc.
+- Format as numbered list: 1. [detailed answer] 2. [detailed answer] etc.
+
+COMPREHENSIVE PROFESSIONAL ANSWERS:"""
 
             # Single API call for all questions with failover
             response = self.smart_generate_with_failover(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
-                    max_output_tokens=1200,  # Enough for all answers
-                    temperature=0.05,  # Very focused
-                    top_p=0.9,
+                    max_output_tokens=5000,  # Higher for complete answers
+                    temperature=0.05,  # Very focused for accuracy
+                    top_p=0.8,  # More focused responses
                     top_k=30
                 )
             )

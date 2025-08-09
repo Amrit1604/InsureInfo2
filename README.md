@@ -19,6 +19,7 @@
    GOOGLE_API_KEY_3=your-gemini-api-key-3
    GOOGLE_API_KEY_4=your-gemini-api-key-4
    GOOGLE_API_KEY_5=your-gemini-api-key-5
+   GOOGLE_API_KEY_6
    ```
 
 3. **Run the API**
@@ -130,7 +131,7 @@ Raw Document Text
 ┌─ Intelligent Chunking ─┐
 │                        │
 │ • Structural Analysis  │ ── Articles, Chapters, Parts
-│ • Semantic Grouping    │ ── 1500-2000 char chunks  
+│ • Semantic Grouping    │ ── 1500-2000 char chunks
 │ • Context Preservation │ ── Minimal overlap
 │ • 70% Speed Boost ⚡   │ ── ~80-120 vs 306 chunks
 └────────────────────────┘
@@ -196,7 +197,7 @@ Questions Array → Parallel Processing → Semantic Search → AI Analysis → 
 universal_document_processor.py
 ├── Intelligent Chunking ──► 7-Strategy Optimization
 ├── Embeddings ──────────────► all-mpnet-base-v2 (High Quality)
-├── Vector Search ───────────► FAISS IndexFlatIP 
+├── Vector Search ───────────► FAISS IndexFlatIP
 ├── Document Cache ──────────► URL-based caching
 ├── API Rotation ────────────► 5-key unlimited processing
 ```
@@ -330,7 +331,7 @@ print(result["answers"])
 
 ---
 
-## 🏆 **Ready to Win the Hackathon!** 
+## 🏆 **Ready to Win the Hackathon!**
 
 Built with **maximum accuracy** and **lightning speed** for hackathon excellence. Test with any document type and experience the power of universal AI document processing.
 
